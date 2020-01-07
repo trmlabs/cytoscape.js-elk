@@ -1,4 +1,4 @@
-let defaults = {
+export default {
   nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
   fit: true, // Whether to fit
   padding: 20, // Padding on fit
@@ -21,5 +21,3 @@ let defaults = {
     return null;
   }
 };
-
-module.exports = defaults;

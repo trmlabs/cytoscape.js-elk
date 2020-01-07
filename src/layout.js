@@ -1,10 +1,6 @@
-const ELK = require('elkjs/lib/elk-api'); // webworkerless api
-const { Worker } = require('elkjs/lib/elk-worker.min'); // worker source
-const elk = new ELK({
-  workerFactory: url => new Worker(url)
-});
-const assign = require('./assign');
-const defaults = require('./defaults');
+import elk from './elk';
+import assign from './assign';
+import defaults from './defaults';
 
 const mapToElkNS = function(elkOpts) {
   let keys = Object.keys(elkOpts);
@@ -196,4 +192,4 @@ Layout.prototype.destroy = function() {
   return this; // chaining
 };
 
-module.exports = Layout;
+export default Layout;
