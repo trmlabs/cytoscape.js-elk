@@ -1,5 +1,8 @@
-const ELK = require('elkjs');
-const elk = new ELK();
+const ELK = require('elkjs/lib/elk-api');  // webworkerless api
+const { Worker } = require('elkjs/lib/elk-worker.min');  // worker source
+const elk = new ELK({
+  workerFactory: (url) => new Worker(url),
+});
 const assign = require('./assign');
 const defaults = require('./defaults');
 
