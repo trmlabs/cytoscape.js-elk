@@ -8,16 +8,14 @@ let config = {
     publicPath: '/dist/'
   },
   output: {
-    path: path.join( __dirname, 'dist' ),
+    path: path.join(__dirname, 'dist'),
     filename: pkg.name + '.js',
-    library: camelcase( pkg.name ),
+    library: camelcase(pkg.name),
     libraryTarget: 'umd'
   },
   module: {
-    rules: [
-      { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
-    ]
-  },
+    rules: [{ test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }]
+  }
 };
 
 module.exports = config;

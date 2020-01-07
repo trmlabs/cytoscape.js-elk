@@ -1,15 +1,19 @@
 const impl = require('./layout');
 
 // registers the extension on a cytoscape lib ref
-let register = function( cytoscape ){
-  if( !cytoscape ){ return; } // can't register if cytoscape unspecified
+let register = function(cytoscape) {
+  // can't register if cytoscape unspecified
+  if (!cytoscape) {
+    return;
+  }
 
-  cytoscape( 'layout', 'elk', impl ); // register with cytoscape.js
+  cytoscape('layout', 'elk', impl); // register with cytoscape.js
 };
 
-if( typeof cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
+// expose to global cytoscape (i.e. window.cytoscape)
+if (typeof cytoscape !== 'undefined') {
   // eslint-disable-next-line no-undef
-  register( cytoscape );
+  register(cytoscape);
 }
 
 module.exports = register;
