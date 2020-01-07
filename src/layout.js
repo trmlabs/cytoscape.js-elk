@@ -4,13 +4,13 @@ import defaults from './defaults';
 import makeGraph from './convert-graph';
 
 function mapToElkNS(elkOpts) {
-  let keys = Object.keys(elkOpts);
-  let ret = {};
+  const keys = Object.keys(elkOpts);
+  const ret = {};
 
   for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    let nsKey = key;
-    let val = elkOpts[key];
+    const key = keys[i];
+    const nsKey = key;
+    const val = elkOpts[key];
     ret[nsKey] = val;
   }
 
@@ -18,15 +18,15 @@ function mapToElkNS(elkOpts) {
 }
 
 function getPos(ele) {
-  let parent = ele.parent();
-  let k = ele.scratch('elk');
-  let p = {
+  const parent = ele.parent();
+  const k = ele.scratch('elk');
+  const p = {
     x: k.x,
     y: k.y
   };
 
   if (parent.nonempty()) {
-    let kp = parent.scratch('elk');
+    const kp = parent.scratch('elk');
 
     p.x += kp.x;
     p.y += kp.y;
@@ -36,21 +36,21 @@ function getPos(ele) {
 }
 
 function Layout(options) {
-  let elkOptions = options.elk;
+  const elkOptions = options.elk;
   
   this.options = assign({}, defaults, options);
   this.options.elk = assign({}, defaults.elk, elkOptions);
 }
 
 Layout.prototype.run = function() {
-  let layout = this;
-  let options = this.options;
+  const layout = this;
+  const options = this.options;
 
-  let eles = options.eles;
-  let nodes = eles.nodes();
-  let edges = eles.edges();
+  const eles = options.eles;
+  const nodes = eles.nodes();
+  const edges = eles.edges();
 
-  let graph = makeGraph(nodes, edges, options);
+  const graph = makeGraph(nodes, edges, options);
 
   elk
     .layout(graph, {
