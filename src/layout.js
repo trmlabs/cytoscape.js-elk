@@ -3,7 +3,7 @@ import assign from './assign';
 import defaults from './defaults';
 import makeGraph from './convert-graph';
 
-const mapToElkNS = function(elkOpts) {
+function mapToElkNS(elkOpts) {
   let keys = Object.keys(elkOpts);
   let ret = {};
 
@@ -15,11 +15,11 @@ const mapToElkNS = function(elkOpts) {
   }
 
   return ret;
-};
+}
 
 const elkOverrides = {};
 
-const getPos = function(ele) {
+function getPos(ele) {
   let parent = ele.parent();
   let k = ele.scratch('elk');
   let p = {
@@ -35,7 +35,7 @@ const getPos = function(ele) {
   }
 
   return p;
-};
+}
 
 function Layout(options) {
   let elkOptions = options.elk;
@@ -61,9 +61,7 @@ Layout.prototype.run = function() {
     })
     .then(() => {
       nodes
-        .filter(function(n) {
-          return !n.isParent();
-        })
+        .filter(n => !n.isParent())
         .layoutPositions(layout, options, getPos);
     });
 

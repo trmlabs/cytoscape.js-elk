@@ -1,4 +1,4 @@
-const makeNode = function(node, options) {
+function makeNode(node, options) {
   let dims = node.layoutDimensions(options);
   let padding = node.numericStyle('padding');
 
@@ -23,9 +23,9 @@ const makeNode = function(node, options) {
   node.scratch('elk', k);
 
   return k;
-};
+}
 
-const makeEdge = function(edge, options) {
+function makeEdge(edge, options) {
   let k = {
     _cyEle: edge,
     id: edge.id(),
@@ -42,9 +42,9 @@ const makeEdge = function(edge, options) {
   edge.scratch('elk', k);
 
   return k;
-};
+}
 
-const makeGraph = function(nodes, edges, options) {
+function makeGraph(nodes, edges, options) {
   let elkNodes = [];
   let elkEdges = [];
   let elkEleLookup = {};
@@ -101,9 +101,9 @@ const makeGraph = function(nodes, edges, options) {
       let parentTgt = e.target().parent();
       if ( false && parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
         let kp = elkEleLookup[ parentSrc.id() ];
-  
+
         kp.edges = kp.edges || [];
-  
+
         kp.edges.push( k );
       } else {*/
     graph.edges.push(k);
@@ -111,6 +111,6 @@ const makeGraph = function(nodes, edges, options) {
   }
 
   return graph;
-};
+}
 
 export default makeGraph;
