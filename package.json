@@ -10,11 +10,9 @@
     "gh-pages:demo": "cpy demo.html . --rename=index.html",
     "gh-pages:deploy": "gh-pages -d . -v node_modules/**",
     "gh-pages:clean": "rimraf index.html",
-    "copyright": "update license",
     "lint": "eslint src",
     "build": "webpack --mode=production",
-    "build:min": "cross-env MIN=true webpack --mode=production",
-    "build:release": "run-s build copyright",
+    "build:release": "run-s build",
     "watch": "webpack --progress --watch --mode=development",
     "dev": "webpack-dev-server --open",
     "test": "mocha"
@@ -39,15 +37,12 @@
     "camelcase": "^5.3.1",
     "chai": "4.2.0",
     "cpy-cli": "^3.0.0",
-    "cross-env": "^6.0.3",
     "eslint": "^6.8.0",
     "gh-pages": "^2.2.0",
     "mocha": "7.0.0",
     "npm-run-all": "^4.1.2",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
-    "update": "^0.7.4",
-    "updater-license": "^1.0.0",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
@@ -56,7 +51,6 @@
     "cytoscape": "^3.2.0"
   },
   "dependencies": {
-    "clean": "^4.0.2",
     "elkjs": "^0.5.1"
   },
   "prettier": {
