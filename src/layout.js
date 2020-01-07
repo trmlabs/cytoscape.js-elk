@@ -3,20 +3,6 @@ import assign from './assign';
 import defaults from './defaults';
 import makeGraph from './convert-graph';
 
-function mapToElkNS(elkOpts) {
-  const keys = Object.keys(elkOpts);
-  const ret = {};
-
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const nsKey = key;
-    const val = elkOpts[key];
-    ret[nsKey] = val;
-  }
-
-  return ret;
-}
-
 function getPos(ele) {
   const parent = ele.parent();
   const k = ele.scratch('elk');
@@ -54,7 +40,7 @@ Layout.prototype.run = function() {
 
   elk
     .layout(graph, {
-      layoutOptions: mapToElkNS(options.elk)
+      layoutOptions: options.elk,
     })
     .then(() => {
       nodes
