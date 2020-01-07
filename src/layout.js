@@ -17,8 +17,6 @@ function mapToElkNS(elkOpts) {
   return ret;
 }
 
-const elkOverrides = {};
-
 function getPos(ele) {
   let parent = ele.parent();
   let k = ele.scratch('elk');
@@ -39,10 +37,9 @@ function getPos(ele) {
 
 function Layout(options) {
   let elkOptions = options.elk;
-
+  
   this.options = assign({}, defaults, options);
-
-  this.options.elk = assign({}, defaults.elk, elkOptions, elkOverrides);
+  this.options.elk = assign({}, defaults.elk, elkOptions);
 }
 
 Layout.prototype.run = function() {
