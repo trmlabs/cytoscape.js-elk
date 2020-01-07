@@ -30,14 +30,6 @@ let config = {
       root: 'ELK'
     },
   } : [],
-  plugins: MIN ? [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-        drop_console: false,
-      }
-    })
-  ] : []
 };
 
 module.exports = config;
