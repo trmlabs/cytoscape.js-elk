@@ -4,7 +4,7 @@ import defaults from './defaults';
 
 const elkOverrides = {};
 
-const getPos = function(ele, options) {
+const getPos = function(ele, options, diff) {
   const dims = ele.layoutDimensions(options);
   const parent = ele.parent();
   const k = ele.scratch('static') || ele.scratch('elk');
@@ -13,6 +13,10 @@ const getPos = function(ele, options) {
     x: k.x,
     y: k.y
   };
+
+  if (diff && diff > 0) {
+    p.y += diff;
+  }
 
   if (ele.scratch('static')) {
     return p;
@@ -57,13 +61,19 @@ const makeNode = function(node, options) {
   return k;
 };
 
-const makeEdge = function(edge /*, options*/) {
+const makeEdge = function(edge, options) {
   const k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
     target: edge.data('target')
   };
+
+  if (edge.data('label')) {
+    k.labels = [{ text: edge.data('label') }];
+  } else if (options.desiredEdgeLength) {
+    k.labels = [{ width: options.desiredEdgeLength, text: ' ' }];
+  }
 
   edge.scratch('elk', k);
 
@@ -170,9 +180,43 @@ Layout.prototype.run = function() {
       layoutOptions: options.elk
     })
     .then(() => {
-      nodes
-        .filter(n => !n.isParent())
-        .layoutPositions(layout, options, n => getPos(n, options));
+      const filteredNodes = nodes.filter(n => !n.isParent());
+      // super simple collision detection, move all new elements down
+      let staticYBottom = null; // highest coord, this is the bottom of the graph, not including height of the node
+      let newYTop = null; // lowest coord, this is the top of the graph
+
+      filteredNodes
+        .filter(n => !!n.scratch('static'))
+        .layoutPositions(layout, options, n => getPos(n, options))
+        .forEach(node => {
+          const positionY = node.scratch('static').y;
+
+          if (staticYBottom === null) {
+            staticYBottom = positionY;
+          } else {
+            staticYBottom = Math.max(staticYBottom, positionY);
+          }
+        });
+
+      staticYBottom += 100; // spacing from the last node
+
+      filteredNodes
+        .filter(n => !n.scratch('static'))
+        .forEach(node => {
+          const positionY = node.scratch('elk').y;
+
+          if (newYTop === null) {
+            newYTop = positionY;
+          } else {
+            newYTop = Math.min(newYTop, positionY);
+          }
+        });
+
+      const diff = staticYBottom - newYTop;
+
+      filteredNodes
+        .filter(n => !n.scratch('static'))
+        .layoutPositions(layout, options, n => getPos(n, options, diff));
     });
 
   return this;
