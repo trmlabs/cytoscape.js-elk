@@ -4,14 +4,14 @@ import defaults from './defaults';
 
 const elkOverrides = {};
 
-const getPos = function (ele, options) {
+const getPos = function(ele, options) {
   const dims = ele.layoutDimensions(options);
-  let parent = ele.parent();
-  let k = ele.scratch('static') || ele.scratch('elk');
+  const parent = ele.parent();
+  const k = ele.scratch('static') || ele.scratch('elk');
 
-  let p = {
+  const p = {
     x: k.x,
-    y: k.y,
+    y: k.y
   };
 
   if (ele.scratch('static')) {
@@ -32,12 +32,12 @@ const getPos = function (ele, options) {
   return p;
 };
 
-const makeNode = function (node, options) {
+const makeNode = function(node, options) {
   const k = {
     _cyEle: node,
     id: node.id(),
     ports: node.data().ports,
-    properties: node.data().properties,
+    properties: node.data().properties
   };
 
   if (!node.isParent()) {
@@ -57,12 +57,12 @@ const makeNode = function (node, options) {
   return k;
 };
 
-const makeEdge = function (edge /*, options*/) {
-  let k = {
+const makeEdge = function(edge /*, options*/) {
+  const k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target'),
+    target: edge.data('target')
   };
 
   edge.scratch('elk', k);
@@ -70,20 +70,20 @@ const makeEdge = function (edge /*, options*/) {
   return k;
 };
 
-const makeGraph = function (nodes, edges, options) {
-  let elkNodes = [];
-  let elkEdges = [];
-  let elkEleLookup = {};
-  let graph = {
+const makeGraph = function(nodes, edges, options) {
+  const elkNodes = [];
+  const elkEdges = [];
+  const elkEleLookup = {};
+  const graph = {
     id: 'root',
     children: [],
-    edges: [],
+    edges: []
   };
 
   // map all nodes
   for (let i = 0; i < nodes.length; i++) {
-    let n = nodes[i];
-    let k = makeNode(n, options);
+    const n = nodes[i];
+    const k = makeNode(n, options);
 
     elkNodes.push(k);
 
@@ -92,8 +92,8 @@ const makeGraph = function (nodes, edges, options) {
 
   // map all edges
   for (let i = 0; i < edges.length; i++) {
-    let e = edges[i];
-    let k = makeEdge(e, options);
+    const e = edges[i];
+    const k = makeEdge(e, options);
 
     elkEdges.push(k);
 
@@ -102,23 +102,23 @@ const makeGraph = function (nodes, edges, options) {
 
   // make hierarchy
   for (let i = 0; i < elkNodes.length; i++) {
-    let k = elkNodes[i];
-    let n = k._cyEle;
+    const k = elkNodes[i];
+    const n = k._cyEle;
 
     if (!n.isChild()) {
       graph.children.push(k);
     } else {
-      let parent = n.parent();
-      let parentK = elkEleLookup[parent.id()];
+      const parent = n.parent();
+      const parentK = elkEleLookup[parent.id()];
 
-      let children = (parentK.children = parentK.children || []);
+      const children = (parentK.children = parentK.children || []);
 
       children.push(k);
     }
   }
 
   for (let i = 0; i < elkEdges.length; i++) {
-    let k = elkEdges[i];
+    const k = elkEdges[i];
 
     // put all edges in the top level for now
     // TODO does this cause issues in certain edgecases?
@@ -147,7 +147,7 @@ function Layout(options) {
 
   this.options.elk = assign(
     {
-      aspectRatio: cy.width() / cy.height(),
+      aspectRatio: cy.width() / cy.height()
     },
     defaults.elk,
     elkOptions,
@@ -155,7 +155,7 @@ function Layout(options) {
   );
 }
 
-Layout.prototype.run = function () {
+Layout.prototype.run = function() {
   const layout = this;
   const options = this.options;
 
@@ -163,27 +163,26 @@ Layout.prototype.run = function () {
   const nodes = eles.nodes();
   const edges = eles.edges();
 
-  const elk = new ELK();
   const graph = makeGraph(nodes, edges, options);
 
   elk
     .layout(graph, {
-      layoutOptions: options.elk,
+      layoutOptions: options.elk
     })
     .then(() => {
       nodes
-        .filter((n) => !n.isParent())
-        .layoutPositions(layout, options, (n) => getPos(n, options));
+        .filter(n => !n.isParent())
+        .layoutPositions(layout, options, n => getPos(n, options));
     });
 
   return this;
 };
 
-Layout.prototype.stop = function () {
+Layout.prototype.stop = function() {
   return this; // chaining
 };
 
-Layout.prototype.destroy = function () {
+Layout.prototype.destroy = function() {
   return this; // chaining
 };
 
