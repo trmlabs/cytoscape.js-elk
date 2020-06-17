@@ -5,14 +5,14 @@ import makeGraph from './convert-graph';
 
 function getPos(ele) {
   const parent = ele.parent();
-  const k = ele.scratch('elk');
+  const k = ele.scratch('static') || ele.scratch('elk');
   const p = {
     x: k.x,
     y: k.y
   };
 
   if (parent.nonempty()) {
-    const kp = parent.scratch('elk');
+    const kp = parent.scratch('static') || parent.scratch('elk');
 
     p.x += kp.x;
     p.y += kp.y;
