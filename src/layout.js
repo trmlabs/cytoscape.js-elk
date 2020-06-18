@@ -4,7 +4,7 @@ import defaults from './defaults';
 
 const elkOverrides = {};
 
-const getPos = function(ele, options, diff) {
+const getPos = function(ele, options) {
   const dims = ele.layoutDimensions(options);
   const parent = ele.parent();
   const k = ele.scratch('static') || ele.scratch('elk');
@@ -13,10 +13,6 @@ const getPos = function(ele, options, diff) {
     x: k.x,
     y: k.y
   };
-
-  if (diff && diff > 0) {
-    p.y += diff;
-  }
 
   if (ele.scratch('static')) {
     return p;
@@ -165,6 +161,53 @@ function Layout(options) {
   );
 }
 
+const heightCollision = 150;
+const widthCollision = 120;
+
+const testCollision = (posX, posY, staticCoords) => {
+  let collision = false;
+
+  // use a for loop to break once we find it
+  // staticCoords[i][0=x,1=y]
+  for (let i = staticCoords.length - 1; i >= 0; i--) {
+    if (
+      Math.abs(staticCoords[i][1] - posY) < heightCollision &&
+      Math.abs(staticCoords[i][0] - posX) < widthCollision
+    ) {
+      collision = true;
+      break;
+    }
+  }
+
+  return collision;
+};
+
+const safeNode = (node, staticCoords) => {
+  const scratch = node.scratch('elk');
+  let posX = scratch.x;
+  let posY = scratch.y;
+  let flipMovement = false;
+
+  // while collision exists, keep moving flipping between horizontal and vertical until no collisions
+  while (testCollision(posX, posY, staticCoords)) {
+    if (flipMovement) {
+      posX += widthCollision;
+    } else {
+      posY += heightCollision;
+    }
+
+    flipMovement = !flipMovement;
+  }
+
+  if (posX !== scratch.x || posY !== scratch.y) {
+    staticCoords.push([posX, posY]);
+    node.scratch('static', {
+      x: posX,
+      y: posY
+    });
+  }
+};
+
 Layout.prototype.run = function() {
   const layout = this;
   const options = this.options;
@@ -181,42 +224,114 @@ Layout.prototype.run = function() {
     })
     .then(() => {
       const filteredNodes = nodes.filter(n => !n.isParent());
-      // super simple collision detection, move all new elements down
-      let staticYBottom = null; // highest coord, this is the bottom of the graph, not including height of the node
-      let newYTop = null; // lowest coord, this is the top of the graph
 
-      filteredNodes
-        .filter(n => !!n.scratch('static'))
+      const staticCoords = [];
+      const staticBox = {
+        xMax: null,
+        xMin: null,
+        yMax: null,
+        yMin: null
+      };
+
+      const newNodes = filteredNodes.filter(n => !n.scratch('static'));
+      const staticNodes = filteredNodes.filter(n => !!n.scratch('static'));
+
+      const isGroupMove = newNodes.length > 1 && staticNodes.length > 1;
+
+      // these nodes are not moved
+      staticNodes
         .layoutPositions(layout, options, n => getPos(n, options))
         .forEach(node => {
-          const positionY = node.scratch('static').y;
+          const { x, y } = node.scratch('static');
 
-          if (staticYBottom === null) {
-            staticYBottom = positionY;
+          if (isGroupMove) {
+            if (staticBox.xMax === null) {
+              staticBox.xMax = x;
+              staticBox.xMin = x;
+              staticBox.yMax = y;
+              staticBox.yMin = y;
+            } else {
+              staticBox.xMax = Math.max(staticBox.xMax, x);
+              staticBox.xMin = Math.min(staticBox.xMin, x);
+              staticBox.yMax = Math.max(staticBox.yMax, y);
+              staticBox.yMin = Math.min(staticBox.yMin, y);
+            }
           } else {
-            staticYBottom = Math.max(staticYBottom, positionY);
+            staticCoords.push([x, y]);
           }
         });
 
-      staticYBottom += 100; // spacing from the last node
+      if (isGroupMove) {
+        // we need to move it as 1
+        const newBox = {
+          xMax: null,
+          xMin: null,
+          yMax: null,
+          yMin: null
+        };
 
-      filteredNodes
-        .filter(n => !n.scratch('static'))
-        .forEach(node => {
-          const positionY = node.scratch('elk').y;
+        newNodes.forEach(node => {
+          const scratch = node.scratch('elk');
 
-          if (newYTop === null) {
-            newYTop = positionY;
+          if (newBox.xMax === null) {
+            newBox.xMax = scratch.x;
+            newBox.xMin = scratch.x;
+            newBox.yMax = scratch.y;
+            newBox.yMin = scratch.y;
           } else {
-            newYTop = Math.min(newYTop, positionY);
+            newBox.xMax = Math.max(newBox.xMax, scratch.x);
+            newBox.xMin = Math.min(newBox.xMin, scratch.x);
+            newBox.yMax = Math.max(newBox.yMax, scratch.y);
+            newBox.yMin = Math.min(newBox.yMin, scratch.y);
           }
         });
 
-      const diff = staticYBottom - newYTop;
+        if (
+          (newBox.xMax <= staticBox.xMax + 100 &&
+            newBox.xMax >= staticBox.xMin - 100) ||
+          (newBox.xMin <= staticBox.xMax + 100 &&
+            newBox.xMin >= staticBox.xMin - 100) ||
+          (newBox.yMax <= staticBox.yMax + 100 &&
+            newBox.yMax >= staticBox.yMin - 100) ||
+          (newBox.yMin <= staticBox.yMax + 100 &&
+            newBox.yMin >= staticBox.yMin - 100)
+        ) {
+          // this box has collision, lets move the least amount
+          // we need bottom-right movement
+          // right = new x min -> static x max
+          // bottom = new y max -> static y min
+          const xDiff = Math.abs(newBox.xMin - staticBox.xMax);
+          const yDiff = Math.abs(newBox.yMax - staticBox.yMin);
 
-      filteredNodes
-        .filter(n => !n.scratch('static'))
-        .layoutPositions(layout, options, n => getPos(n, options, diff));
+          if (xDiff < yDiff) {
+            // this means Y is bigger, so move X
+            newNodes.forEach(node => {
+              const scratch = node.scratch('elk');
+
+              node.scratch('static', {
+                x: scratch.x + xDiff + widthCollision,
+                y: scratch.y
+              });
+            });
+          } else {
+            // this means X is bigger, so move Y
+            newNodes.forEach(node => {
+              const scratch = node.scratch('elk');
+
+              node.scratch('static', {
+                x: scratch.x,
+                y: scratch.y + yDiff + heightCollision
+              });
+            });
+          }
+        }
+      } else {
+        if (staticCoords.length) {
+          newNodes.forEach(node => safeNode(node, staticCoords));
+        }
+      }
+
+      newNodes.layoutPositions(layout, options, n => getPos(n, options));
     });
 
   return this;
